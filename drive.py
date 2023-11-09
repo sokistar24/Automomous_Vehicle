@@ -11,7 +11,7 @@ import cv2
 sio = socketio.Server()
 
 app = Flask(__name__)  # '__main__'
-speed_limit = 10
+speed_limit = 1000
 
 
 def img_preprocess(img):
@@ -42,6 +42,16 @@ def connect(sid, environ):
     send_control(0, 0)
 
 
+@sio.on('connect_error')
+def connect_error(data):
+    print("A connection error occurred:", data)
+
+
+@sio.on('connect_timeout')
+def connect_timeout():
+    print("A connection timeout occurred")
+
+
 def send_control(steering_angle, throttle):
     sio.emit('steer', data={
         'steering_angle': steering_angle.__str__(),
@@ -50,6 +60,6 @@ def send_control(steering_angle, throttle):
 
 
 if __name__ == '__main__':
-    model = load_model('modeldabby.h5')
+    model = load_model('modelmain.h5')
     app = socketio.Middleware(sio, app)
     eventlet.wsgi.server(eventlet.listen(('', 4567)), app)
